@@ -5,6 +5,10 @@
 Author: Andrew Francey
 -----------------------
 Date: 05/01/24
+-----------------------
+Functions for numeretically integrating
+the coupled ODEs for the 3 body problem
+to create a dataset to train the ANN.
 '''
 
 import numpy as np
