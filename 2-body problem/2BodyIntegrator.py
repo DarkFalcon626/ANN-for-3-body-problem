@@ -14,7 +14,7 @@ gravitanal problem.
 import numpy as np 
 import pylab as plt
 
-def solver2D(x0, v0, period, dt):
+def solver2D(x0, v0, period, dt, epsilon):
     
     def grav(x):
         '''
@@ -100,11 +100,54 @@ def solver2D(x0, v0, period, dt):
         
         return k 
     
+    ## Check that the values inputed meet the criteria.
+    if period <= 0:
+        raise Exception("The period must be greater then zero")
+    elif dt <= 0:
+        raise Exception("The time step dt must be greater then zero")
+    
     ## Initialize the lists to store the positions and velocities
-    x = [np.array([[x0,0],
+    x_lst = [np.array([[x0,0],
                    [-x0,0]])]
     
-    v = [v0]
+    
+    v_lst = [v0]
+    
+    ## Coefficents for the RK4(5) method.
+    CH = np.array([47/450, 0., 12/25, 32/225, 1/30, 6/25])
+    CT = np.array([1/150, 0., -3/100, 16/75, 1/20, -6/25])
+    
+    ## Initalize the starting time and indexing counter.
+    t = 0
+    i = 0 
+    
+    while t < period:
+        print(x_lst)
+        x = x_lst.pop()
+        v = v_lst.pop()
+        print(x)
+        
+        x_lst.append(x)
+        v_lst.append(v)
+        
+        k = RKF4Coef(grav, x, dt)
+        l = RKF4Coef(dxdt, v, dt)
+        
+        v_new = v
+        x_new = x
+        
+        for j in range(6):
+            v_new += CH[j]*k[j]
+            x_new += CH[j]*l[j]
+    
+        kTE = abs(sum(CT[i]*k[i] for i in range(6)))
+        lTE = abs(sum(CT[i]*l[i] for i in range(6)))
+        
+        TE = max(np.amax(kTE), np.amax(lTE))
+        
+        return x_lst
+    
+    
     
     
     
