@@ -9,6 +9,13 @@
 <hr>
 
 <h3>The Plan</h3>
-<p>
-  First we try to build
+<p>First we try to build a ANN to solve the 2-body problem. By trying the method on a less choatic system with a known solution we can test to see if the method will work for a simplier case before trying it on a more complex system.
+  <ol>
+    <li>
+      We start the process by building a dataset of solutions by solving the differential equations using the velocity verlot method for solving equations of motion.
+    </li>
+    <li>
+      Next we build an artifical neural network.
+    </li>
+  </ol>
 </p>
