@@ -88,15 +88,16 @@ def solver2D(x0, v0, period, dt, epsilon):
         ## Initialize the array to store the computed coeffiecents.
         k = np.zeros((6,x.shape[0],x.shape[1]),float)
         
+        y = x
         ## loop over all the coefficents
         for i in range(6):
             j = 0 # Counter to keep just the lower triangle of the B matrix.
             while j < i:
-                x += B[i][j]*k[j] ## Add the updated value to the x value.
+                y += B[i][j]*k[j] ## Add the updated value to the x value.
                 j += 1 ## Update the counter.
             
             ## Compute the coefficent with the updated x value.
-            k[i] = h*f(x)
+            k[i] = h*f(y)
         
         return k 
     
@@ -106,46 +107,55 @@ def solver2D(x0, v0, period, dt, epsilon):
     elif dt <= 0:
         raise Exception("The time step dt must be greater then zero")
     
+    x = np.array([[x0,0],
+                  [-x0,0]])
+    v = v0
+    
     ## Initialize the lists to store the positions and velocities
-    x_lst = [np.array([[x0,0],
-                   [-x0,0]])]
-    
-    
+    x_lst = [np.array([[x0,0.],[-x0,0.]])] 
     v_lst = [v0]
+    t_lst = [0.]
     
     ## Coefficents for the RK4(5) method.
     CH = np.array([47/450, 0., 12/25, 32/225, 1/30, 6/25])
     CT = np.array([1/150, 0., -3/100, 16/75, 1/20, -6/25])
     
     ## Initalize the starting time and indexing counter.
-    t = 0
+    t = 0.
     i = 0 
     
     while t < period:
-        print(x_lst)
-        x = x_lst.pop()
-        v = v_lst.pop()
-        print(x)
         
-        x_lst.append(x)
-        v_lst.append(v)
+        k = RKF4Coef(grav, v, dt)
+        l = RKF4Coef(dxdt, x, dt)
         
-        k = RKF4Coef(grav, x, dt)
-        l = RKF4Coef(dxdt, v, dt)
-        
-        v_new = v
         x_new = x
+        v_new = v
         
         for j in range(6):
             v_new += CH[j]*k[j]
             x_new += CH[j]*l[j]
-    
+        
+        t_new = t + dt
         kTE = abs(sum(CT[i]*k[i] for i in range(6)))
         lTE = abs(sum(CT[i]*l[i] for i in range(6)))
         
         TE = max(np.amax(kTE), np.amax(lTE))
         
-        return x_lst
+        dt = 0.9*dt*(epsilon/TE)**(1/5)
+        
+        if TE <= epsilon:
+            x_lst.append(x_new)
+            v_lst.append(v_new)
+            t_lst.append(t_new)
+        
+            x = x_new
+            v = v_new
+            t = t_new
+            
+            i += 1
+        
+    return x_lst, v_lst, t_lst
     
     
     
