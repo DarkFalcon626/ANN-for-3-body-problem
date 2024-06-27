@@ -14,7 +14,37 @@ gravitanal problem.
 import numpy as np 
 import pylab as plt
 
-def solver2D(x0, v0, period, dt, epsilon):
+def solver2B(x0, v0, period, dt):
+    '''
+    Produces arrays for the position, velocity, and the time steps for both 
+    bodies in a two body system requiring the inital position of the first
+    body along the x-axis x0 and the velocity vectors of both bodies v0. Also 
+    requires the length of time period and the time step dt.
+
+    Parameters
+    ----------
+    x0 : Float
+        The inital position of the first body along the x-axis.
+    v0 : Numpy array
+        The x,y velocities of both bodies.
+    period : Float
+        The length of time to compute the results.
+    dt : Float
+        The time step to use in the computation.
+
+    Raises
+    ------
+    Exception
+        The initial position x0 must be between 0. and 1.
+        The period must be greater then zero.
+        The time step dt must be greater then zero.
+
+    Returns
+    -------
+    Triplet of Numpy array
+        The positions of both bodies. The velocities of both bodies and the 
+        time marks.      
+    '''
     
     def grav(x):
         '''
@@ -57,9 +87,9 @@ def solver2D(x0, v0, period, dt, epsilon):
         '''
         return v
     
-    def RKF4Coef(f, x, h):
+    def RK4Coef(f, x, h):
         '''
-        Produces the coefficents for use in the Runge-Kutta-Fehlberg method 
+        Produces the coefficents for use in the Runge-Kutta method 
         to solve the function f given a value x with a time step h.
 
         Parameters
@@ -74,30 +104,15 @@ def solver2D(x0, v0, period, dt, epsilon):
         Returns
         -------
         k : Numpy array
-            The 6 coefficents for the RKF4(5) method.
+            The 4 coefficents for the RK4 method.
         '''
         
-        ## The coefficents for the RKF5(5) method.
-        B = np.array([[0., 0., 0., 0., 0.],
-                      [2/9, 0., 0., 0., 0.],
-                      [1/12, 1/4, 0., 0., 0.],
-                      [69/128, -243/128, 135/64, 0., 0.], 
-                      [-17/12, 27/4, -27/5, 16/15, 0.], 
-                      [65/432, -5/16, 13/16, 4/27, 5/144]])
+        k1 = f(x)
+        k2 = f(x+ 0.5*h*k1)
+        k3 = f(x+ 0.5*h*k2)
+        k4 = f(x+ h*k3)
         
-        ## Initialize the array to store the computed coeffiecents.
-        k = np.zeros((6,x.shape[0],x.shape[1]),float)
-        
-        y = x
-        ## loop over all the coefficents
-        for i in range(6):
-            j = 0 # Counter to keep just the lower triangle of the B matrix.
-            while j < i:
-                y += B[i][j]*k[j] ## Add the updated value to the x value.
-                j += 1 ## Update the counter.
-            
-            ## Compute the coefficent with the updated x value.
-            k[i] = h*f(y)
+        k = np.array([k1,k2,k3,k4])
         
         return k 
     
@@ -106,56 +121,63 @@ def solver2D(x0, v0, period, dt, epsilon):
         raise Exception("The period must be greater then zero")
     elif dt <= 0:
         raise Exception("The time step dt must be greater then zero")
+    elif x0 <= 0 or x0 > 1:
+        raise Exception("The inital position x0 must be between 0 and 1")
     
+    ## Initials the values for the loop
     x = np.array([[x0,0],
                   [-x0,0]])
     v = v0
     
-    ## Initialize the lists to store the positions and velocities
+    ## Initialize the lists to store the positions and velocities.
     x_lst = [np.array([[x0,0.],[-x0,0.]])] 
     v_lst = [v0]
     t_lst = [0.]
     
-    ## Coefficents for the RK4(5) method.
-    CH = np.array([47/450, 0., 12/25, 32/225, 1/30, 6/25])
-    CT = np.array([1/150, 0., -3/100, 16/75, 1/20, -6/25])
-    
     ## Initalize the starting time and indexing counter.
     t = 0.
-    i = 0 
     
+    ## compute all the time steps in the period
     while t < period:
         
-        k = RKF4Coef(grav, v, dt)
-        l = RKF4Coef(dxdt, x, dt)
+        ## Compute the coefficents for the RK process.
+        k = RK4Coef(grav, x, dt)
+        l = RK4Coef(dxdt, v, dt)
         
-        x_new = x
-        v_new = v
+        ## Compute the new velocites and positions of the bodies.
+        v_new = v + (dt/6)*(k[0]+2*k[1]+2*k[2]+k[3])
+        x_new = x + (dt/6)*(l[0]+2*l[1]+2*l[2]+l[3])
         
-        for j in range(6):
-            v_new += CH[j]*k[j]
-            x_new += CH[j]*l[j]
-        
+        ## Compute the next time step.
         t_new = t + dt
-        kTE = abs(sum(CT[i]*k[i] for i in range(6)))
-        lTE = abs(sum(CT[i]*l[i] for i in range(6)))
+    
+        ## Update and append the new values to their respective lists.
+        t_lst.append(t_new)
+        t = t_new
         
-        TE = max(np.amax(kTE), np.amax(lTE))
+        v_lst.append(v_new)
+        v = v_new
         
-        dt = 0.9*dt*(epsilon/TE)**(1/5)
-        
-        if TE <= epsilon:
-            x_lst.append(x_new)
-            v_lst.append(v_new)
-            t_lst.append(t_new)
-        
-            x = x_new
-            v = v_new
-            t = t_new
-            
-            i += 1
-        
+        x_lst.append(x_new)
+        x = x_new
+    
+    ## Convert the lists to arrays.
+    x_lst = np.array(x_lst)
+    v_lst = np.array(v_lst)
+    t_lst = np.array(t_lst)
+    
     return x_lst, v_lst, t_lst
+    
+
+def plot2B(x):
+    
+    y = np.transpose(x,(1,2,0))
+    
+    plt.plot(y[0][0][0], y[0][1][0], 'ro')
+    plt.plot(y[0][0], y[0][1], 'r')
+    plt.plot(y[1][0][0],y[1][1][0], 'bo')
+    plt.plot(y[1][0],y[1][1],'b')
+    plt.show()
     
     
     
