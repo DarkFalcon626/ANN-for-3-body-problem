@@ -67,7 +67,7 @@ def solver2B(x0, v0, period, dt):
         
         ## apply Newtons equation for gravity to both bodies
         for i in range(2):
-            a[i] = (x[i-1]-x[i])*((np.linalg.norm(x[i-1]-x[i]))**(-3))
+            a[i] = 10*(x[i-1]-x[i])*((np.linalg.norm(x[i-1]-x[i]))**(-3))
         
         return a
     
