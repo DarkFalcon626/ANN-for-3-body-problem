@@ -170,6 +170,23 @@ def solver2B(x0, v0, period, dt):
     
 
 def plot2B(x):
+    '''
+    Plots the positions of the 2 bodies in 2 dimension.
+
+    Parameters
+    ----------
+    x : Numpy array
+        The trajectory of 2 bodies.
+        
+    Effects
+    -------
+    Creates image of the 2 bodies trajectories.
+
+    Returns
+    -------
+    None.
+
+    '''
     
     y = np.transpose(x,(1,2,0))
     

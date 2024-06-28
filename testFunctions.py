@@ -17,23 +17,20 @@ import Integrator
 ## Test 1 conditions
 x_initial_t1 = np.array([-0.3,0.2])
 v_initial_t1 = np.zeros((3,2),float)
-dt_t1 = 0.0002 
-period_t1 = 0.3
+dt_t1 = 0.00001 
+period_t1 = 3
 
-solver_t1 = Integrator.solver(x_initial_t1,v_initial_t1,period_t1,dt_t1)
+x_t1, v_t1, t_t1 = Integrator.solver(x_initial_t1,v_initial_t1,period_t1,dt_t1)
 
-print(solver_t1)
 
 ## Test 2 conditions
 x_initial_t2 = np.array([-0.7071,0.7071])
 v_initial_t2 = np.zeros((3,2),float)
-dt_t2 = 0.0002 
-period_t2 = 0.3
+dt_t2 = 0.00001 
+period_t2 = 3
 
-solver_t2 = Integrator.solver(x_initial_t2,v_initial_t2,period_t2,dt_t2)
-
-print(solver_t2)
+x_t2, v_t2, t_t2 = Integrator.solver(x_initial_t2,v_initial_t2,period_t2,dt_t2)
 
 
-Integrator.plot_x(solver_t1)
-Integrator.plot_x(solver_t2)
+Integrator.plot_x(x_t1)
+Integrator.plot_x(x_t2)

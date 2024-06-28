@@ -41,7 +41,7 @@ def solver(x_initial, v_intial, period, dt):
     A numpy array with the positions and velocity of the 3 bodies.
     '''
     
-    def gravitial_acceleraton(x):
+    def grav(x):
         '''
         Produces the acceleration of all three bodies based on the gravitational
         force from the three bodies.
@@ -60,11 +60,28 @@ def solver(x_initial, v_intial, period, dt):
             for j in range(3):
                 ## The below ensures no division of zero.
                 if j != i or (x[j][0]-x[i][0]) != 0 or (x[j][1]-x[i][1]) != 0: 
-                    a[i] += (abs((x[j]-x[i]))**(-3))*(x[j]-x[i])
+                    a[i] += 10*(x[j]-x[i])*(np.linalg.norm(x[j]-x[i])**(-3))
 
         return a
     
-    def center_of_mass(x1,x2):
+    def dxdt(v):
+        '''
+        The eqaution for velocity of the system.
+
+        Parameters
+        ----------
+        v : Numpy array
+            The velocity matrix of the system.
+
+        Returns
+        -------
+        v : Numpy array
+            The velocity matrix of the system.
+        '''
+
+        return v
+    
+    def center_mass(x1,x2):
         '''
         Produces the position vector for the third body to keep the center of 
         mass at the origin (0,0).
@@ -86,6 +103,35 @@ def solver(x_initial, v_intial, period, dt):
         
         return x3
     
+    def RK4Coef(f, x, h):
+        '''
+        Produces the coefficents for use in the Runge-Kutta method 
+        to solve the function f given a value x with a time step h.
+
+        Parameters
+        ----------
+        f : Function
+            The ODE to solve. Must only take in one varible.
+        x : Numpy array
+            The data array to be inputted into the function.
+        h : Float
+            The timestep to be applied.
+
+        Returns
+        -------
+        k : Numpy array
+            The 4 coefficents for the RK4 method.
+        '''
+        
+        k1 = f(x)
+        k2 = f(x + 0.5*h*k1)
+        k3 = f(x + 0.5*h*k2)
+        k4 = f(x + h*k3)
+        
+        k = np.array([k1,k2,k3,k4])
+        
+        return k
+    
     ## Check that the values inputed meet the criteria.
     if x_initial[0] > 0:
         raise Exception("The second body must be in the negative x domain.")
@@ -98,39 +144,40 @@ def solver(x_initial, v_intial, period, dt):
     elif dt <= 0:
         raise Exception("The time step dt must be greater then zero")
     
-    ## Determine how many data points will be calculated based on the time step
-    ##  and the period.
+    ## Create the time array for all the time steps
+    t = np.arange(0, period + dt, dt)
     
-    n_steps = int(period//dt)
-    print(n_steps)
-    x = np.zeros((n_steps+1, 3, 2), float) # Create an array to store positions
-    v = np.zeros((n_steps+1, 3, 2), float) # Create an array to store velocities
+    ## Determine how many steps are in the solution.
+    n = t.size
     
-    ## Input our intial conditions to the arrays
-    x[0] = np.array([[1,0],x_initial,center_of_mass(np.array([1,0]),x_initial)])
+    ## Create arrays to store the position and velocity values
+    x = np.zeros((n+1,3,2))
+    v = np.zeros((n+1,3,2))
+    
+    ## Find the position of the 3rd mass to center at the center of mass
+    x3 = center_mass(np.array([1., 0.]), x_initial)
+    
+    ## Input the intial conditions
+    x[0] = np.array([[1.,0.],[x_initial[0],x_initial[1]],[x3[0],x3[1]]])
     v[0] = v_intial
     
-    ## Using for Velocity Verlet method to solve for each timestep
-    for n in range(n_steps):
-        a = gravitial_acceleraton(x[n])
+    for i in range(n):
         
-        x_new = x[n] + v[n]*dt + 0.5*a*(dt**2)
+        ## Compute the coefficents
+        k = RK4Coef(grav, x[i], dt)
+        l = RK4Coef(dxdt, v[i], dt)
         
-        x_new[2] = center_of_mass(x_new[0], x_new[1])
+        ## Compute the new velocities and positions.
+        v[i+1] = v[i] + (dt/6)*(k[0]+2*k[1]+2*k[2]+k[3])
+        x[i+1] = x[i] + (dt/6)*(l[0]+2*l[1]+2*l[2]+l[3])
         
-        a_new = gravitial_acceleraton(x_new)
-        
-        v_new = v[n] + 0.5*(a+a_new)*dt
-        
-        x[n+1] = x_new
-        v[n+1] = v_new
+    return x, v, t
     
-    return x
     
 
 def plot_x(x):
     '''
-    Plots the position of the 3 bodies in 2 demensions.
+    Plots the position of the 3 bodies in 2 dimensions.
 
     Parameters
     ----------
