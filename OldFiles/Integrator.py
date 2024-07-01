@@ -13,7 +13,7 @@ import pylab as plt
 
 def solver(x_initial, v_intial, period, dt):
     '''
-    Using a velocity Verlet algorithm to solve for the position and velocities
+    Using a Runge-Kutta algorithm to solve for the position and velocities
     at a certien time step dt over the length of time period. given the intial
     position and velocities x_initial and v_inital respectively.
     
@@ -60,7 +60,7 @@ def solver(x_initial, v_intial, period, dt):
             for j in range(3):
                 ## The below ensures no division of zero.
                 if j != i or (x[j][0]-x[i][0]) != 0 or (x[j][1]-x[i][1]) != 0: 
-                    a[i] += 10*(x[j]-x[i])*(np.linalg.norm(x[j]-x[i])**(-3))
+                    a[i] += (x[j]-x[i])*(np.linalg.norm(x[j]-x[i])**(-3))
 
         return a
     
@@ -115,7 +115,7 @@ def solver(x_initial, v_intial, period, dt):
         x : Numpy array
             The data array to be inputted into the function.
         h : Float
-            The timestep to be applied.
+            The time step to be applied.
 
         Returns
         -------
