@@ -9,9 +9,8 @@ Data: 07/01/24
 """
 
 import numpy as np
-import pylab as pl
+import pylab as plt
 import random as rn
-import scipy.constants as sc
 
 
 def Integator(f, g, x0, v0, period, h):
@@ -159,3 +158,46 @@ def dxdt(v):
 
     return v 
 
+
+def plotSystem(x):
+    '''
+    Produces a plot of a meteorite traveling throught the earth moon system.
+
+    Parameters
+    ----------
+    x : Numpy array
+        The trajectory of the meteorite.
+
+    Effects
+    -------
+    Produces plot.
+    
+    Returns
+    -------
+    None.
+    '''
+    
+    x = np.transpose(x,(1,0))
+    
+    plt.axes()
+    
+    earth = plt.Circle((0,0), 6.3781e6/3.84e8, fc='red')
+    moon = plt.Circle((0,1), 1.74e6/3.84e8, fc='blue')
+    
+    plt.plot(x[0][0],x[1][0], "go")
+    plt.plot(x[0],x[1],"g",label='meteor path')
+    
+    plt.gca().add_patch(earth)
+    plt.gca().add_patch(moon)
+    
+    plt.axis('square')
+    plt.show()
+    
+    
+
+        
+    
+    
+    
+    
+    
