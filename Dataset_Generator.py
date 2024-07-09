@@ -93,12 +93,15 @@ def Integator(f, g, x0, v0, period, h):
     for i in range(n):
         
         ## Compute the coefficents
-        k = RK4Coef(f, x[i], v[i], h)
+        k = RK4Coef(f, x[i], h)
         l = RK4Coef(g, v[i], h)
         
         ## Update the next values
         v[i+1] = v[i] + (h/6)*(k[0]+2*k[1]+2*k[2]+k[3])
         x[i+1] = x[i] + (h/6)*(l[0]+2*l[1]+2*l[2]+l[3])
+        
+        percent = (i/n)*100 
+        print(percent)
         
     return x, v, t
 
@@ -120,16 +123,21 @@ def dudt(x):
 
     '''
     
-    ME = 5.972e24        ## Mass of the earth
-    MM = 7.34767309e22   ## Mass of the moon
-    d = 3.844e8          ## Distance between the earth and moon
+    NE = 7.34767309e22/5.9722e24       ## ratio between the moon and earth
+    RE = 6.3781e6/3.84e8               ## Nondimensionalized radius of the earth
+    RM = 1.74e6/3.84e8                 ## Nondimensionalized radius of the moon
     
     ## Position the earth at the origin and the moon along the y axis.
     x2 = np.array([0.,0.])  
-    x3 = np.array([0., d])
+    x3 = np.array([0., 1])
     
     ## Newtons equation of gravity.
-    a = sc.G*(ME*(x2-x1)/(np.linalg.norm(x2-x1)**3)+M[1]*(x3-x1)/(np.linalg.norm(x3-x1)**3))
+    if np.linalg.norm(x-x2) <= RE or np.linalg.norm(x-x3) <= RM:
+        ## If the test mass enters the radius of either the earth or moon then
+        ## set the acceleration to zero.
+        a = np.array([0., 0.])  
+    else:
+        a = (x2-x)/(np.linalg.norm(x2-x)**3)+NE*(x3-x)/(np.linalg.norm(x3-x)**3)
     
     return a
 
@@ -150,7 +158,4 @@ def dxdt(v):
     '''
 
     return v 
-
-
-
 
