@@ -1,0 +1,15 @@
+{
+	"data":{
+		"sample_num": 20,
+		"period": 4,
+		"time_step": 0.00001,
+		"xmin": 0.1,
+		"xmax": 1,
+		"ymin": -0.5,
+		"ymax": 1.2,
+		"dxmin": -0.5,
+		"dxmax": 0.5,
+		"dymin": -0.5,
+		"dymax": 0.5
+	}
+}

@@ -11,6 +11,8 @@ Data: 07/01/24
 import numpy as np
 import pylab as plt
 import random as rn
+import pickle as pck
+import os
 
 
 def Integator(f, g, x0, v0, period, h):
@@ -98,11 +100,8 @@ def Integator(f, g, x0, v0, period, h):
         ## Update the next values
         v[i+1] = v[i] + (h/6)*(k[0]+2*k[1]+2*k[2]+k[3])
         x[i+1] = x[i] + (h/6)*(l[0]+2*l[1]+2*l[2]+l[3])
-        
-        percent = (i/n)*100 
-        print(percent)
-        
-    return x, v, t
+                
+    return x
 
 
 def dudt(x):
@@ -194,7 +193,92 @@ def plotSystem(x):
     plt.show()
     
     
+def generateData(plot=False):
+    '''
+    Generates random values for the starting position and velocity for a meteor
+    then uses the RK4 method to solve for the trajectory of the particle. The
+    solutions and the inital conditions are then serielized as a pickle file in
+    a new folder for each data set generated.
+    
+    Effects
+    -------
+    Create a new folder to store the initial conditions and trajectors.
+    Create file for the initial conditions.
+    Create file for the trajectors.
 
+    Returns
+    -------
+    values : Numpy array
+        The initial conditions.
+    Data : Numpy array
+        The trajectories from the initial conditions.
+    '''
+    
+    n = 3             # The number of different trajectories to generate.
+    T = 2              # The nondimensionalized period.
+    dt = 0.000001      # The time step value.
+    
+    ## An array for each time step values.
+    t = np.arange(0, T+dt, dt)
+    
+    ## Initialize arrays to store the inital conditions.
+    x0 = np.zeros((n, 2), float)
+    v0 = np.zeros((n, 2), float)
+    
+    ## Generate random inital conditions.
+    for i in range(n):
+        x = rn.uniform(0.05, 1)
+        y = rn.uniform(-1.2, 1.2)
+        
+        x0[i] = np.array([x,y])      # Store the position values.
+        
+        dx = rn.uniform(-0.5, 0.5)
+        dy = rn.uniform(-0.5, 0.5)
+        
+        v0[i] = np.array([dx,dy])    # Store the velocity values.
+    
+    ## Initialize an array to store the trajectory values.
+    Data = np.zeros((n, t.size+1, 2))
+    print('Initial conditions generated')
+    print(x0)
+    print(v0)
+    
+    ## Solve for the trajectory of each initial conidtions.
+    for i in range(n):
+        Data[i] = Integator(dudt, dxdt, x0[i], v0[i], T, dt)
+        print('Solution number {} has been solved'.format(i+1))
+        if plot: # If plotting is turned on show plots of new data
+            plotSystem(Data[i])
+    
+    ## Determine if a folder for the solution already exists.
+    i = 0
+    DatasetExists = True
+    while DatasetExists:
+        DatasetPath = os.getcwd()+'\\Datasets\\Dataset' + str(i)
+        
+        DatasetExists = os.path.exists(DatasetPath)
+        
+        i += 1
+    
+    ## When we find one that doesn't exist create a new one.
+    os.makedirs(DatasetPath)
+    
+    ## Open a new text file for the trajectorys called Targets.
+    with open(DatasetPath+'\\Targets.pkl', 'wb') as data:
+        pck.dump(Data, data)
+    
+    data.close()
+    
+    ## Store both the positions and velocities in same array
+    values = np.array([x0,v0])     
+    
+    ## Open a new text file for the initial conditions.
+    with open(DatasetPath+'\\Values.pkl','wb') as val:
+        pck.dump(values,val)
+    
+    val.close()
+    
+    return values, Data
         
     
     
