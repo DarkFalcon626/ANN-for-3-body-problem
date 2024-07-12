@@ -11,5 +11,12 @@
 		"dxmax": 0.5,
 		"dymin": -0.5,
 		"dymax": 0.5
+	},
+	
+	"net":{
+		"hidden_1": 10,
+		"hidden_2": 10,
+		"hidden_3": 5,
+		"drop_out_rate": 0.2
 	}
 }
