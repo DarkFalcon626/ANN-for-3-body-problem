@@ -12,8 +12,13 @@ import numpy as np
 import pylab as plt
 import random as rn
 import pickle as pck
+import json
 import os
 
+
+##-----------------------------------------------------------------------------
+## Functions
+##-----------------------------------------------------------------------------
 
 def Integator(f, g, x0, v0, period, h):
     '''
@@ -193,7 +198,7 @@ def plotSystem(x):
     plt.show()
     
     
-def generateData(plot=False):
+def generateData(param, plot=False):
     '''
     Generates random values for the starting position and velocity for a meteor
     then uses the RK4 method to solve for the trajectory of the particle. The
@@ -214,9 +219,9 @@ def generateData(plot=False):
         The trajectories from the initial conditions.
     '''
     
-    n = 3             # The number of different trajectories to generate.
-    T = 2              # The nondimensionalized period.
-    dt = 0.000001      # The time step value.
+    n = param['sample_num'] # The number of different trajectories to generate.
+    T = param['period']     # The nondimensionalized period.
+    dt = param['time_step'] # The time step value.
     
     ## An array for each time step values.
     t = np.arange(0, T+dt, dt)
@@ -227,13 +232,13 @@ def generateData(plot=False):
     
     ## Generate random inital conditions.
     for i in range(n):
-        x = rn.uniform(0.05, 1)
-        y = rn.uniform(-1.2, 1.2)
+        x = rn.uniform(param['xmin'], param['xmax'])
+        y = rn.uniform(param['ymin'], param['ymax'])
         
         x0[i] = np.array([x,y])      # Store the position values.
         
-        dx = rn.uniform(-0.5, 0.5)
-        dy = rn.uniform(-0.5, 0.5)
+        dx = rn.uniform(param['dxmin'], param['dxmax'])
+        dy = rn.uniform(param['dymin'], param['dymax'])
         
         v0[i] = np.array([dx,dy])    # Store the velocity values.
     
@@ -279,9 +284,25 @@ def generateData(plot=False):
     val.close()
     
     return values, Data
-        
+
+##-----------------------------------------------------------------------------
+## Main code
+##----------------------------------------------------------------------------- 
+       
+if __name__ == '__main__':
     
+    ## Load in a default param file to help run the data generator.
+    paramPath = os.getcwd() + '\\param.json'
     
+    with open(paramPath) as paramfile:
+        param = json.load(paramfile)
     
+    ## Ask user how many folders for batchs should be created.
+    n_batch = int(input('How many new batchs of would you like to create: '))
     
+    ## Generate new data points.
+    for i in range(n_batch):
+        generateData(param['data'],True)
+    
+    print('Data has been Generated')
     
