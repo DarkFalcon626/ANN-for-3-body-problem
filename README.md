@@ -42,8 +42,13 @@ This simplifies to,
 ```
 A solution to the above equation does not exist in a closed form solution, A Numeretical solution can be found using computer algorithms such as the 4th order Runge-Kutta method. These methods can be quite computationally expensive to run and only build solutions step by step not allowing us to put in a set of inputs (i.e $`\vec{x}`$) and get the solution (i.e $`\vec{y}`$) as we would be able to if we knew the function $`f(\vec{x})=\vec{y}`$, this is where our project comes into play.
 
-Using the universal approximation theorem which is stated below
+Using the universal approximation theorem which is stated below, we can train a artifical neural network $`N(t,\vec{x}_{0}, \vec{v}_{0})`$ to approximate the solution to the above equations.
 
 ![UATScreenshot](/Graphics/UATScreenshot.png "The Universal Approximation Theorem")
+
+
+## Creating The Network
+
+
 
 
