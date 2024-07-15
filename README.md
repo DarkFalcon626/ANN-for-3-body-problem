@@ -40,3 +40,11 @@ This simplifies to,
 ```math
 \frac{d\vec{r}}{d\tau}=\vec{v}
 ```
+A solution to the above equation does not exist in a closed form solution, A Numeretical solution can be found using computer algorithms such as the 4th order Runge-Kutta method. These methods can be quite computationally expensive to run and only build solutions step by step not allowing us to put in a set of inputs (i.e $`\vec{x}`$) and get the solution (i.e $`\vec{y}`$) as we would be able to if we knew the function $`f(\vec{x})=\vec{y}`$, this is where our project comes into play.
+
+Using the universal approximation theorem which is stated below
+
+
+> (Universal Approximation Theorem) Let $`\epsilon > 0`$, let $`n, k \in \mathbb{N}`$ and let $`K \subset \mathbb{R}^{n}`$ be compact. Let $`f:K \rightarrow \mathbb{R}^{k}`$ and $`g:\mathbb{R}\rightarrow\mathbb{R}`$ both be continuous.
+>   Then there exist a natural number $`m\in\mathbb{N}`$, matrices $`W^{[1]}\in\mathbb{R}^{m\times n}`$, $`W^{[2]}\in\mathbb{R}^{k\times m}`$ and column vectors $`b^{[1]}\in \mathbb{R}^{m}`$, $`b^{[2]}\in \mathbb{R}^{k}`$ such that, for $`N(x) := W^{[2]}\cdot g\bigl(W^{[1]}\cdot x + b^{[1]}\bigr)+b^{[2]}`$ (where $`g`$ is applied component-wise to the vector in $`\mathbb{R}^{m}`$), we have:
+>```math ```
