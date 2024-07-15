@@ -49,6 +49,7 @@ Using the universal approximation theorem which is stated below, we can train a 
 
 ## Creating The Network
 
+![NetworkImg](/Graphics/NetworkImg.png "Image of the Artifical Neural Network")
 
 
 
