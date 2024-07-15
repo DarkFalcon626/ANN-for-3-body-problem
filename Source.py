@@ -13,6 +13,16 @@ import torch.nn as nn
 import torch.nn.functional as func
 
 
+##-----------------------------------------------------------------------------
+## Class's
+##-----------------------------------------------------------------------------
+
+class Data():
+    
+    def __init__(self, data_path, param, device):
+        
+        
+
 class Net(nn.Module):
     '''
     A Artifical neural network with 3 hidden layer designed to approximate the

@@ -126,7 +126,7 @@ def dudt(x):
 
     '''
     
-    NE = 7.34767309e22/5.9722e24       ## ratio between the moon and earth
+    NM = 7.34767309e22/5.9722e24       ## ratio between the moon and earth
     RE = 6.3781e6/3.84e8               ## Nondimensionalized radius of the earth
     RM = 1.74e6/3.84e8                 ## Nondimensionalized radius of the moon
     
@@ -140,7 +140,7 @@ def dudt(x):
         ## set the acceleration to zero.
         a = np.array([0., 0.])  
     else:
-        a = (x2-x)/(np.linalg.norm(x2-x)**3)+NE*(x3-x)/(np.linalg.norm(x3-x)**3)
+        a = (x2-x)/(np.linalg.norm(x2-x)**3)+NM*(x3-x)/(np.linalg.norm(x3-x)**3)
     
     return a
 
