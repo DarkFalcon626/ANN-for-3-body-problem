@@ -48,7 +48,7 @@ Using the universal approximation theorem which is stated below, we can train a 
 
 
 ## Creating The Network
-
+To solve the problem we use a artifical neural network to approximate the solution to the restricted 3 body problem. In our network we use an input layer with 5 neurons for both the $`x`$ and $`y`$ initial coordinates, the $`v_{x}`$ and $`v_{y}`$ initial velocity coordinates, and $`t`$ the time we want the coordates at. we then run these through 3 hidden layers with a tanh activation function leading to an output layer of 2 neurons with a linear activation function for the position coordinates $`x`$ and $`y`$. An image of this network is given below.
 ![NetworkImg](Graphics/NetworkImg.PNG "Image of the Artifical Neural Network")
 
 
