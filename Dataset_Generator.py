@@ -268,6 +268,12 @@ def generateData(param, plot=False):
     ## When we find one that doesn't exist create a new one.
     os.makedirs(DatasetPath)
     
+    ## Save the time domains parameter for recreating the array later.
+    with open(DatasetPath+'\\Time.pkl', 'wb') as time_param:
+        pck.dump([T,dt],time_param)
+    
+    time_param.close()
+    
     ## Open a new text file for the trajectorys called Targets.
     with open(DatasetPath+'\\Targets.pkl', 'wb') as data:
         pck.dump(Data, data)

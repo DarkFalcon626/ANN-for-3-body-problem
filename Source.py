@@ -8,7 +8,10 @@ Author: Andrew Francey
 Data:12/07/24
 """
 
+import os
 import torch
+import pickle as pck
+import numpy as np
 import torch.nn as nn
 import torch.nn.functional as func
 
@@ -19,8 +22,67 @@ import torch.nn.functional as func
 
 class Data():
     
-    def __init__(self, data_path, param, device):
+    def __init__(self, folders, param, device):
         
+        data_path = os.getcwd()+'\\Datasets\\Dataset'
+        
+        for i in folders:
+            folder = data_path+str(i)
+            
+            if not(os.path.exists(folder)):
+                raise Exception("The folder Dataset{} does not exists".format(i))
+        
+        targets = []
+        values = []
+        
+        for i in folders:
+            folder = data_path+str(i)
+            
+            with open(folder+'\\Time.pkl', 'r') as f:
+                time_param = pck.load(f)
+            f.close()
+            
+            with open(folder+'\\Values.pkl', 'r') as f:
+                vals = pck.load(f)
+            f.close()
+            
+            with open(folder+'\\Targets.pkl', 'r') as f:
+                targ = pck.load(f)
+            f.close()
+            
+            T = time_param[0]
+            dt = time_param[1]
+            
+            n_vals = np.shape(vals)[1]
+            t = np.arange(0, T+dt, dt)
+            
+            value = np.zeros((n_vals*t.size, 5),float)
+            
+            for n in range(n_vals):
+                for m in range(t.size):
+                    value[n*t.size + m][0] = t[m]
+                    value[n*t.size + m][1] = vals[n][0][0]
+                    value[n*t.size + m][2] = vals[n][0][1]
+                    value[n*t.size + m][3] = vals[n][1][0]
+                    value[n*t.size + m][4] = vals[n][1][1]
+            
+            values.append(value)
+            
+            target = np.zeros((n_vals*t.size,2),float)
+            for n in range(n_vals):
+                for m in range(t.size):
+                    target[n*t.size + m][0] = targ[n][0]
+                    target[n*t.size + m][1] = targ[n][1]
+            
+            targets.append(target)
+        
+        values = values.reshape(-1,5)
+        targets = targets.reshape(-1,2)
+        
+        self.values = torch.tensor(values).to(device)
+        self.targets = torch.tensor(targets).to(device)
+            
+            
         
 
 class Net(nn.Module):
@@ -147,8 +209,8 @@ class Net(nn.Module):
     
     def test(self, inputs, targets, loss):
         '''
-        Passes the data set through the model and returning the loss value using
-        the loss function to evaluate the datas inputs and targets.
+        Passes the data set through the model and returning the loss value 
+        using the loss function to evaluate the datas inputs and targets.
 
         Parameters
         ----------
