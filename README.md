@@ -52,4 +52,14 @@ To solve the problem we use a artifical neural network to approximate the soluti
 ![NetworkImg](Graphics/NetworkImg.PNG "Image of the Artifical Neural Network")
 
 
+## Creating the Datasets
+In order to train our model we use a supravisied learning method, to do this we require a dataset to give our network a target to determine how the model is preforming and how the models parameters should be updated. 
+
+
+
+
+
+
+
+
 
