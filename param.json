@@ -1,5 +1,6 @@
 {
 	"data":{
+		"test_percentage": 0.1,
 		"sample_num": 20,
 		"period": 4,
 		"time_step": 0.00001,
@@ -18,5 +19,11 @@
 		"hidden_2": 10,
 		"hidden_3": 5,
 		"drop_out_rate": 0.2
+	},
+
+	"exec":{
+		"lr": 0.0001,
+		"num_epochs": 200,
+		"num_epochs": 10
 	}
 }

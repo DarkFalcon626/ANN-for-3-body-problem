@@ -10,6 +10,7 @@ Data:12/07/24
 
 import os
 import torch
+import json
 import pickle as pck
 import numpy as np
 import torch.nn as nn
@@ -56,7 +57,7 @@ class Data():
     def __init__(self, folders, param, device):
         
         ## Assign the location of the datasets to a datapath.
-        data_path = os.getcwd()+'\\Datasets\\Dataset'
+        data_path = os.path.dirname(__file__)+'\\Datasets\\Dataset'
         
         ## The following ensures that all the numbers in folders corresponds to 
         ## an existing data set.
@@ -289,5 +290,32 @@ class Net(nn.Module):
         
         return cross_val.item()
     
-    
+##-----------------------------------------------------------------------------
+## Main Code For testing
+##-----------------------------------------------------------------------------   
         
+## The following section of code is design to be used to test that all the 
+##  class and functions run smoothly.
+
+if __name__ == '__main__':
+    
+    ## Determine if a GPU is availabe to train.
+    if torch.cuda.is_available():
+        dev = 'cuda:0'
+    else:
+        dev = 'cpu'
+        
+    device = torch.device(dev)
+    
+    ## Determines the location of the file with the parameters.
+    param_location = os.path.dirname(__file__) + '\\param.json'
+    
+    ## Open the parameter file.
+    with open(param_location, 'rb') as f:
+        param = json.load(f)
+    
+    f.close
+    
+    ## Create a data and network class.
+    data = Data([0,1], param['data'], device)
+    model = Net(param['net'])
