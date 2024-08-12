@@ -21,68 +21,124 @@ import torch.nn.functional as func
 ##-----------------------------------------------------------------------------
 
 class Data():
+    '''
+    Consumes a list of numbers corresponding to folders for datasets, a
+    JSON file with parameters for the dataset, and the device either a GPU
+    or the CPU to store the data on. This creates a dataset with attributes
+    for testing and training including input values and targets to train a 
+    ANN netwrok.
+
+    Parameters
+    ----------
+    folders : Listof(Int)
+        A list of the indices corresponding to folders for data sets.
+    param : JSON 
+        The parameters for how to set up the datasets.
+    device : Torch Object
+        Either the CPU or the GPU to store the data on.
+    random : Bool
+        Boolean value telling if the data should be shuffled randomly if True,
+        or stay in organized structures if False. Default is False.
+
+    Raises
+    ------
+    Exception
+        If file doesn't exist.
     
+    Attributes
+    ----------
+    n_test : Int
+        The number of data points in the test set.
+    n_train : Int
+        The number of data points in the training set.
+    
+    '''
     def __init__(self, folders, param, device):
         
+        ## Assign the location of the datasets to a datapath.
         data_path = os.getcwd()+'\\Datasets\\Dataset'
         
+        ## The following ensures that all the numbers in folders corresponds to 
+        ## an existing data set.
         for i in folders:
             folder = data_path+str(i)
             
+            ## If the folder does not exist raise an error.
             if not(os.path.exists(folder)):
                 raise Exception("The folder Dataset{} does not exists".format(i))
         
+        ## Initial lists to store the targets and the values.
         targets = []
         values = []
         
+        ## Iterate through all the folders.
         for i in folders:
-            folder = data_path+str(i)
+            folder = data_path+str(i) #Get the path for the folder.
             
-            with open(folder+'\\Time.pkl', 'r') as f:
+            ## Open the files in the folder.
+            with open(folder+'\\Time.pkl', 'rb') as f:
                 time_param = pck.load(f)
             f.close()
             
-            with open(folder+'\\Values.pkl', 'r') as f:
+            with open(folder+'\\Values.pkl', 'rb') as f:
                 vals = pck.load(f)
             f.close()
             
-            with open(folder+'\\Targets.pkl', 'r') as f:
+            with open(folder+'\\Targets.pkl', 'rb') as f:
                 targ = pck.load(f)
             f.close()
             
+            ## Load in the parameters
             T = time_param[0]
             dt = time_param[1]
+            n = time_param[2]
             
-            n_vals = np.shape(vals)[1]
+            ## Create an array for the time parameters.
             t = np.arange(0, T+dt, dt)
             
-            value = np.zeros((n_vals*t.size, 5),float)
-            
-            for n in range(n_vals):
-                for m in range(t.size):
-                    value[n*t.size + m][0] = t[m]
-                    value[n*t.size + m][1] = vals[n][0][0]
-                    value[n*t.size + m][2] = vals[n][0][1]
-                    value[n*t.size + m][3] = vals[n][1][0]
-                    value[n*t.size + m][4] = vals[n][1][1]
-            
-            values.append(value)
-            
-            target = np.zeros((n_vals*t.size,2),float)
-            for n in range(n_vals):
-                for m in range(t.size):
-                    target[n*t.size + m][0] = targ[n][0]
-                    target[n*t.size + m][1] = targ[n][1]
-            
-            targets.append(target)
+            ## Create an (1,5) vector to feed into the network.
+            for i in range(n):
+                val_set = np.zeros((t.size,5),float)
+                for j in range(t.size):
+                    val_set[j][0] = vals[0][i][0]
+                    val_set[j][1] = vals[0][i][1]
+                    val_set[j][2] = vals[1][i][0]
+                    val_set[j][3] = vals[1][i][1]
+                    val_set[j][4] = t[j]
+                
+                ## Appending our sets of vectors to the list of sets.
+                values.append(val_set)
+                targets.append(targ[i])
         
-        values = values.reshape(-1,5)
-        targets = targets.reshape(-1,2)
+        ## Determine the sizes for the test and training datasets.
+        test_size = int(len(val_set)*param['test_percentage'])
+        train_size = len(val_set) - test_size
         
-        self.values = torch.tensor(values).to(device)
-        self.targets = torch.tensor(targets).to(device)
-            
-            
+        ## Convert to arrays
+        targets_train = np.array(targets[:train_size])
+        targets_test = np.array(targets[train_size:])
+        
+        values_train = np.array(values[:train_size])
+        values_test = np.array(values[train_size:])
+        
+        ## Reshape the arrays
+        targets_train = targets_train.reshape((targets_train.shape[0]*targets_train.shape[1],targets_train.shape[2]))
+        targets_test = targets_test.reshape((targets_test.shape[0]*targets_test.shape[1],targets_test[2]))
+        
+        values_train = values_train.reshape((values_train.shape[0]*values_train.shape[1], values_train.shape[2]))
+        values_test = values_test.reshape((values_test.shape[0]*values_test.shape[1], values_test.shape[2]))
+        
+        ## Get the lenght of the test and training data.
+        self.n_train = targets_train.shape[0]
+        self.n_test = targets_test.shape[0]
+        
+        ## Convert to pytorch tensors.
+        self.targets_train = torch.tensor(targets_train).to(device)
+        self.targets_test = torch.tensor(targets_test).to(device)
+        
+        self.values_train = torch.tensor(values_train).to(device)
+        self.values_test = torch.tensor(values_test).to(device)
+        
         
 
 class Net(nn.Module):

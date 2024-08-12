@@ -270,7 +270,7 @@ def generateData(param, plot=False):
     
     ## Save the time domains parameter for recreating the array later.
     with open(DatasetPath+'\\Time.pkl', 'wb') as time_param:
-        pck.dump([T,dt],time_param)
+        pck.dump([T,dt,n],time_param)
     
     time_param.close()
     
