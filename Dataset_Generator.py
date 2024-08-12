@@ -126,7 +126,7 @@ def dudt(x):
 
     '''
     
-    NE = 7.34767309e22/5.9722e24       ## ratio between the moon and earth
+    NM = 7.34767309e22/5.9722e24       ## ratio between the moon and earth
     RE = 6.3781e6/3.84e8               ## Nondimensionalized radius of the earth
     RM = 1.74e6/3.84e8                 ## Nondimensionalized radius of the moon
     
@@ -140,7 +140,7 @@ def dudt(x):
         ## set the acceleration to zero.
         a = np.array([0., 0.])  
     else:
-        a = (x2-x)/(np.linalg.norm(x2-x)**3)+NE*(x3-x)/(np.linalg.norm(x3-x)**3)
+        a = (x2-x)/(np.linalg.norm(x2-x)**3)+NM*(x3-x)/(np.linalg.norm(x3-x)**3)
     
     return a
 
@@ -267,6 +267,12 @@ def generateData(param, plot=False):
     
     ## When we find one that doesn't exist create a new one.
     os.makedirs(DatasetPath)
+    
+    ## Save the time domains parameter for recreating the array later.
+    with open(DatasetPath+'\\Time.pkl', 'wb') as time_param:
+        pck.dump([T,dt,n],time_param)
+    
+    time_param.close()
     
     ## Open a new text file for the trajectorys called Targets.
     with open(DatasetPath+'\\Targets.pkl', 'wb') as data:
