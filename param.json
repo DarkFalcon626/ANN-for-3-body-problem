@@ -18,7 +18,7 @@
 		"hidden_1": 10,
 		"hidden_2": 10,
 		"hidden_3": 5,
-		"drop_out_rate": 0.2
+		"drop_out": 0.2
 	},
 
 	"exec":{
