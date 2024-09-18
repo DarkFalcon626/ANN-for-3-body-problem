@@ -2,7 +2,7 @@
 	"data":{
 		"test_percentage": 0.1,
 		"sample_num": 20,
-		"period": 4,
+		"period": 3,
 		"time_step": 0.00001,
 		"xmin": 0.01,
 		"xmax": 0.3,
@@ -24,6 +24,6 @@
 	"exec":{
 		"lr": 0.0001,
 		"num_epochs": 200,
-		"num_epochs": 10
+		"display_epochs": 10
 	}
 }

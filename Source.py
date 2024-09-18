@@ -5,7 +5,7 @@ Source file
 ----------------------------
 Author: Andrew Francey
 ----------------------------
-Data:12/07/24
+Date:12/07/24
 """
 
 import os
@@ -96,7 +96,7 @@ class Data():
             
             ## Create an array for the time parameters.
             t = np.arange(0, T+dt, dt)
-            
+
             ## Create an (1,5) vector to feed into the network.
             for i in range(n):
                 val_set = np.zeros((t.size,5),float)
@@ -129,6 +129,8 @@ class Data():
         values_train = values_train.reshape((values_train.shape[0]*values_train.shape[1], values_train.shape[2]))
         values_test = values_test.reshape((values_test.shape[0]*values_test.shape[1], values_test.shape[2]))
         
+        print(targets_test.shape)
+        print(values_test.shape)
         ## Get the lenght of the test and training data.
         self.n_train = targets_train.shape[0]
         self.n_test = targets_test.shape[0]
@@ -139,7 +141,6 @@ class Data():
         
         self.values_train = torch.tensor(values_train).to(device)
         self.values_test = torch.tensor(values_test).to(device)
-        
         
 
 class Net(nn.Module):

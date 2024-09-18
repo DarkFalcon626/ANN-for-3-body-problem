@@ -88,7 +88,7 @@ def run(param, model, data):
     optimizer = torch.optim.Adam(model.parameters(), lr=param['lr'])
     
     ## Using the binary cross-entropy loss function to determine the loss value.
-    loss = nn.BCELoss(reduction='mean')
+    loss = nn.MSELoss()
     
     ## Create lists to store the testing and training loss values of each epoch.
     loss_vals = []
@@ -102,7 +102,7 @@ def run(param, model, data):
         loss_vals.append(train_val)
         
         ## Test the model on the test set.
-        test_val = model.test(data.values_test, data.values_train, loss)
+        test_val = model.test(data.values_test, data.targets_test, loss)
         cross_vals.append(test_val)
         
         ## Determine if the loss values should be printed to the screen.
@@ -113,10 +113,10 @@ def run(param, model, data):
                       'tTest loss: {:.5f}'.format(test_val))
                 
         elif (epoch+1) % param['display_epochs'] == 0:
-            print('Epoch [{}/{}] ({:.1f}%)'.format(epoch+1, num_epochs, \
+            print('Epoch [{}/{}] ({:.1f}%) '.format(epoch+1, num_epochs, \
                                                    ((epoch+1)/num_epochs*100))+ \
-                  '\tTraning loss: {:.5f}'.format(train_val) + \
-                      'tTest loss: {:.5f}'.format(test_val))
+                  '\tTraning loss: {:.5f} '.format(train_val) + \
+                      '\tTest loss: {:.5f}'.format(test_val))
             winsound.Beep(1000,100)
         
     print('Final training Loss: {:.6f}'.format(loss_vals[-1]))
@@ -170,7 +170,7 @@ if __name__ == "__main__":
         dev = 'cuda:0'
     else:
         dev = 'cpu'
-    
+
     device = torch.device(dev)
     
     ## Determine the file path of file.
@@ -238,7 +238,7 @@ if __name__ == "__main__":
     save = save_value(save)
     
     if save:
-        with open(args.model_name) as model_file:
+        with open(args.model_name, 'wb') as model_file:
             pickle.dump(model, model_file)
         model_file.close()
         plt.savefig(args.fig_name, format='png')
