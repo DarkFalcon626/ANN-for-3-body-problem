@@ -85,7 +85,8 @@ def run(param, model, data):
     '''
     
     ## Using the ADAM optimization method for updating the models parameters.
-    optimizer = torch.optim.Adam(model.parameters(), lr=param['lr'])
+    optimizer = torch.optim.Adam(model.parameters(), lr=param['lr'],
+                                 betas=(param['beta1'],param['beta2']))
     
     ## Using the binary cross-entropy loss function to determine the loss value.
     loss = nn.MSELoss()
