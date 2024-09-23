@@ -82,7 +82,7 @@ def Integator(f, g, x0, v0, period, h):
         return k
     
     ## Create an array with the time steps.
-    t = np.arange(0, period + h, h)
+    t = np.arange(h, period + h, h)
     
     ## Determine how many steps are in the solution.
     n = t.size
@@ -224,8 +224,8 @@ def generateData(param, plot=False):
     dt = param['time_step'] # The time step value.
     
     ## An array for each time step values.
-    t = np.arange(0, T+dt, dt)
-    
+    t = np.arange(dt, T+dt, dt)
+
     ## Initialize arrays to store the inital conditions.
     x0 = np.zeros((n, 2), float)
     v0 = np.zeros((n, 2), float)

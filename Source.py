@@ -5,7 +5,7 @@ Source file
 ----------------------------
 Author: Andrew Francey
 ----------------------------
-Data:12/07/24
+Date:12/07/24
 """
 
 import os
@@ -96,7 +96,7 @@ class Data():
             
             ## Create an array for the time parameters.
             t = np.arange(0, T+dt, dt)
-            
+
             ## Create an (1,5) vector to feed into the network.
             for i in range(n):
                 val_set = np.zeros((t.size,5),float)
@@ -112,8 +112,8 @@ class Data():
                 targets.append(targ[i])
         
         ## Determine the sizes for the test and training datasets.
-        test_size = int(len(val_set)*param['test_percentage'])
-        train_size = len(val_set) - test_size
+        test_size = round(len(targets)*param['test_percentage'])
+        train_size = len(targets) - test_size
         
         ## Convert to arrays
         targets_train = np.array(targets[:train_size])
@@ -121,14 +121,16 @@ class Data():
         
         values_train = np.array(values[:train_size])
         values_test = np.array(values[train_size:])
-        
+
         ## Reshape the arrays
-        targets_train = targets_train.reshape((targets_train.shape[0]*targets_train.shape[1],targets_train.shape[2]))
-        targets_test = targets_test.reshape((targets_test.shape[0]*targets_test.shape[1],targets_test[2]))
+        targets_train = targets_train.reshape((targets_train.shape[0]*targets_train.shape[1], targets_train.shape[2]))
+        targets_test = targets_test.reshape((targets_test.shape[0]*targets_test.shape[1], targets_test.shape[2]))
         
         values_train = values_train.reshape((values_train.shape[0]*values_train.shape[1], values_train.shape[2]))
         values_test = values_test.reshape((values_test.shape[0]*values_test.shape[1], values_test.shape[2]))
         
+        print(targets_test.shape)
+        print(values_test.shape)
         ## Get the lenght of the test and training data.
         self.n_train = targets_train.shape[0]
         self.n_test = targets_test.shape[0]
@@ -143,7 +145,6 @@ class Data():
     def create_batch(batch_size, shuffle = True):
         
         return 
-        
         
 
 class Net(nn.Module):
@@ -201,6 +202,8 @@ class Net(nn.Module):
         self.layer4 = nn.Linear(hidden3, 2)
         
         self.drop_out = nn.Dropout(drop_out_rate)
+        
+        self.double()
 
         
     def forward(self, x):
@@ -229,7 +232,6 @@ class Net(nn.Module):
         x = func.tanh(x)
         x = self.drop_out(x)
         x = self.layer4(x)
-        x = func.Linear(x)
         
         return x
 
@@ -323,3 +325,5 @@ if __name__ == '__main__':
     ## Create a data and network class.
     data = Data([0,1], param['data'], device)
     model = Net(param['net'])
+    
+    print('Data and model created successfully.')
