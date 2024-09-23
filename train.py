@@ -77,7 +77,7 @@ def run(param, model, data):
         ## Passs the whole training data set through the model.
         train_val = model.backprop(data.values_train, data.targets_train, loss,
                                    optimizer)
-        loss_val.append(train_val)
+        loss_vals.append(train_val)
         
         ## Test the model on the test set.
         test_val = model.test(data.values_test, data.values_train, loss)
@@ -95,7 +95,7 @@ def run(param, model, data):
                                                    ((epoch+1)/num_epochs*100))+ \
                   '\tTraning loss: {:.5f}'.format(train_val) + \
                       'tTest loss: {:.5f}'.format(test_val))
-                winsound.Beep(1000,100)
+            winsound.Beep(1000,100)
         
     print('Final training Loss: {:.6f}'.format(loss_vals[-1]))
     print('Final test loss: {:.6f}'.format(cross_vals[-1]))        

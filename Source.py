@@ -139,6 +139,10 @@ class Data():
         
         self.values_train = torch.tensor(values_train).to(device)
         self.values_test = torch.tensor(values_test).to(device)
+    
+    def create_batch(batch_size, shuffle = True):
+        
+        return 
         
         
 
