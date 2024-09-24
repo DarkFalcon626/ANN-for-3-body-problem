@@ -129,8 +129,6 @@ class Data():
         values_train = values_train.reshape((values_train.shape[0]*values_train.shape[1], values_train.shape[2]))
         values_test = values_test.reshape((values_test.shape[0]*values_test.shape[1], values_test.shape[2]))
         
-        print(targets_test.shape)
-        print(values_test.shape)
         ## Get the lenght of the test and training data.
         self.n_train = targets_train.shape[0]
         self.n_test = targets_test.shape[0]
@@ -142,9 +140,96 @@ class Data():
         self.values_train = torch.tensor(values_train).to(device)
         self.values_test = torch.tensor(values_test).to(device)
     
-    def create_batch(batch_size, shuffle = True):
+    def shuffle(self):
+        '''
+        Shuffles up the data for the training and the test data sets keeping
+        the targets and the values matching in the indices
+
+        Returns
+        -------
+        None.
+
+        '''
         
-        return 
+        ## Create an array with all the indices of the training set.
+        indexs = np.arange(0, self.n_train, 1)
+            
+        ## Shuffle the indices.
+        np.random.shuffle(indexs)
+            
+        training_targets = torch.zeros(self.n_train,
+                                        self.targets_train.shape[1])
+        training_values = torch.zeros(self.n_train,
+                                       self.values_train.shape[1])
+        
+        ## Move all the data points to the corresponding indices place.
+        for i, j in enumerate(indexs):
+            
+            training_targets[i] = self.targets_train[j]
+            training_values[i] = self.values_train[j]
+            
+        indexs = np.arange(0, self.n_test, 1)
+            
+        ## Shuffle the indices
+        np.random.shuffle(indexs)
+            
+        test_targets = torch.zeros((self.n_test,
+                                    self.targets_test.shape[1]),
+                                   float)
+        test_values = torch.zeros((self.n_test,
+                                   self.values_test.shape[1]),
+                                  float)
+            
+        for i, j in enumerate(indexs):
+            
+            test_targets[i] = self.targets_test[j]
+            test_values[i] = self.values_test[j]
+            
+        self.targets_train = training_targets
+        self.targets_test = test_targets
+        self.values_train = training_values
+        self.values_test = test_values
+    
+
+    def create_batch(self, n_batches, shuffle = True):
+        '''
+        
+
+        Parameters
+        ----------
+        n_batches : TYPE
+            DESCRIPTION.
+        shuffle : TYPE, optional
+            DESCRIPTION. The default is True.
+
+        Returns
+        -------
+        targets_train : TYPE
+            DESCRIPTION.
+        values_train : TYPE
+            DESCRIPTION.
+
+        '''
+        
+        if shuffle:
+            self.shuffle()
+
+        batch_size = self.n_train//n_batches
+        
+        rem = self.n_train%batch_size
+            
+        targets_train = torch.tensor(self.targets_train[:-rem])
+        values_train = torch.tensor(self.values_train[:-rem])
+        
+        targets_train = torch.reshape(targets_train,(n_batches,
+                                                     batch_size,
+                                                     targets_train.shape[1]))
+        values_train = torch.reshape(values_train, (n_batches,
+                                                    batch_size,
+                                                    values_train.shape[1]))
+        
+        return targets_train, values_train
+        
         
 
 class Net(nn.Module):
@@ -327,3 +412,6 @@ if __name__ == '__main__':
     model = Net(param['net'])
     
     print('Data and model created successfully.')
+    data.shuffle()
+    print('Shuffled')
+    data_targets, data_values = data.create_batch(5, False)
