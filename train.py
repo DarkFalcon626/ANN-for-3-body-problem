@@ -61,7 +61,7 @@ def prep(folders, param):
     return data, model
 
 
-def run(param, model, data):
+def run(param, model, data, batch=True, shuffle=True):
     '''
     Train and test the model outputing the loss values from both the training
     and testing at each epoch. 
@@ -97,11 +97,26 @@ def run(param, model, data):
     
     num_epochs = int(param['num_epochs'])
     for epoch in range(num_epochs):
-        ## Passs the whole training data set through the model.
-        train_val = model.backprop(data.values_train, data.targets_train, loss,
-                                   optimizer)
-        loss_vals.append(train_val)
+        if batch:
+            n_batchs = param['num_batchs']
+            
+            targets_train, values_train = data.create_batch(n_batchs, shuffle)
         
+            ave_train_loss = 0 
+            
+            for i in range(n_batchs):
+                train_val = model.backprop(values_train[i], targets_train[i], loss,
+                                           optimizer)
+                ave_train_loss += train_val
+            
+            loss_vals.append(ave_train_loss/n_batchs)
+            
+        else:
+            ## Passs the whole training data set through the model.
+            train_val = model.backprop(data.values_train, data.targets_train, loss,
+                                       optimizer)
+            loss_vals.append(train_val)
+            
         ## Test the model on the test set.
         test_val = model.test(data.values_test, data.targets_test, loss)
         cross_vals.append(test_val)
@@ -116,6 +131,8 @@ def run(param, model, data):
         elif (epoch+1) % param['display_epochs'] == 0:
             print('Epoch [{}/{}] ({:.1f}%) '.format(epoch+1, num_epochs, \
                                                    ((epoch+1)/num_epochs*100))+ \
+                  '\tTraning loss: {:.5f}'.format(train_val) + \
+                      'tTest loss: {:.5f}'.format(test_val))
 
             winsound.Beep(1000,100)
         

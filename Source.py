@@ -157,58 +157,39 @@ class Data():
         ## Shuffle the indices.
         np.random.shuffle(indexs)
             
-        training_targets = torch.zeros(self.n_train,
-                                        self.targets_train.shape[1])
-        training_values = torch.zeros(self.n_train,
-                                       self.values_train.shape[1])
+        indexs = torch.tensor(indexs).to(device)
         
-        ## Move all the data points to the corresponding indices place.
-        for i, j in enumerate(indexs):
-            
-            training_targets[i] = self.targets_train[j]
-            training_values[i] = self.values_train[j]
-            
-        indexs = np.arange(0, self.n_test, 1)
-            
-        ## Shuffle the indices
+        self.targets_train = torch.index_select(self.targets_train,0,indexs)
+        self.values_train = torch.index_select(self.values_train,0,indexs)
+        
+        indexs = np.arange(self.n_test)
+        
         np.random.shuffle(indexs)
-            
-        test_targets = torch.zeros((self.n_test,
-                                    self.targets_test.shape[1]),
-                                   float)
-        test_values = torch.zeros((self.n_test,
-                                   self.values_test.shape[1]),
-                                  float)
-            
-        for i, j in enumerate(indexs):
-            
-            test_targets[i] = self.targets_test[j]
-            test_values[i] = self.values_test[j]
-            
-        self.targets_train = training_targets
-        self.targets_test = test_targets
-        self.values_train = training_values
-        self.values_test = test_values
+        
+        indexs = torch.tensor(indexs).to(device)
+        
+        self.targets_test = torch.index_select(self.targets_test, 0, indexs)
+        self.values_test = torch.index_select(self.values_test, 0, indexs)
     
 
     def create_batch(self, n_batches, shuffle = True):
         '''
-        
+        Reshapes the data into batchs for training. If data can not be broken
+        into equal sized batchs, last batch will be dropped.
 
         Parameters
         ----------
-        n_batches : TYPE
-            DESCRIPTION.
-        shuffle : TYPE, optional
-            DESCRIPTION. The default is True.
+        n_batches : Int
+            The number of batchs to split the data into.
+        shuffle : Bool, optional
+            If true the data will be shuffled. The default is True.
 
         Returns
         -------
-        targets_train : TYPE
-            DESCRIPTION.
-        values_train : TYPE
-            DESCRIPTION.
-
+        targets_train : Torch Tensor
+            The training targets batched data.
+        values_train : Torch Tensor
+            The training values batched data.
         '''
         
         if shuffle:
@@ -218,8 +199,8 @@ class Data():
         
         rem = self.n_train%batch_size
             
-        targets_train = torch.tensor(self.targets_train[:-rem])
-        values_train = torch.tensor(self.values_train[:-rem])
+        targets_train = torch.tensor(self.targets_train.clone().detach()[:-rem])
+        values_train = torch.tensor(self.values_train.clone().detach()[:-rem])
         
         targets_train = torch.reshape(targets_train,(n_batches,
                                                      batch_size,
