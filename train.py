@@ -21,9 +21,9 @@ import numpy as np
 import pylab as plt
 
 
-##--------------------------------------------
+##-----------------------------------------------
 ## Functions
-##--------------------------------------------
+##-----------------------------------------------
 
 def prep(folders, param):
     '''
@@ -50,18 +50,20 @@ def prep(folders, param):
     
     ## If the model exists load in the model.
     if os.path.exists(args.model_name):
-        with open(args.model_name) as model_file:
+        with open(args.model_name, 'rb') as model_file:
             model = pickle.load(model_file)
         model_file.close()
+        print('Model loaded ({})'.format(args.model_name))
     else: # If it doesn't create a new one.
         model = src.Net(param['net'])
+        print('New model created and being used')
     
     model.to(device) # Move the model to the same device as the data.
     
     return data, model
 
 
-def run(param, model, data):
+def run(param, model, data, device, batch=True, shuffle=True):
     '''
     Train and test the model outputing the loss values from both the training
     and testing at each epoch. 
@@ -85,7 +87,8 @@ def run(param, model, data):
     '''
     
     ## Using the ADAM optimization method for updating the models parameters.
-    optimizer = torch.optim.Adam(model.parameters(), lr=param['lr'])
+    optimizer = torch.optim.Adam(model.parameters(), lr=param['lr'],
+                                 betas=(param['beta1'],param['beta2']))
     
     ## Using the binary cross-entropy loss function to determine the loss value.
     loss = nn.MSELoss()
@@ -96,27 +99,44 @@ def run(param, model, data):
     
     num_epochs = int(param['num_epochs'])
     for epoch in range(num_epochs):
-        ## Passs the whole training data set through the model.
-        train_val = model.backprop(data.values_train, data.targets_train, loss,
-                                   optimizer)
-        loss_vals.append(train_val)
+        if batch:
+            n_batchs = param['num_batchs']
+            
+            targets_train, values_train = data.create_batch(n_batchs, shuffle, device)
         
+            ave_train_loss = 0 
+            
+            for i in range(n_batchs):
+
+                train_val = model.backprop(values_train[i], targets_train[i], loss,
+                                           optimizer)
+                ave_train_loss += train_val
+            
+            loss_vals.append(ave_train_loss/n_batchs)
+            
+        else:
+            ## Passs the whole training data set through the model.
+            train_val = model.backprop(data.values_train, data.targets_train, loss,
+                                       optimizer)
+            loss_vals.append(train_val)
+            
         ## Test the model on the test set.
         test_val = model.test(data.values_test, data.targets_test, loss)
         cross_vals.append(test_val)
         
         ## Determine if the loss values should be printed to the screen.
         if epoch == 0:
-            print('Epoch [{}/{}] ({:.1f}%)'.format(epoch+1, num_epochs, \
+            print('Epoch [{}/{}] ({:.1f}%) '.format(epoch+1, num_epochs, \
                                                    ((epoch+1)/num_epochs*100))+ \
-                  '\tTraning loss: {:.5f}'.format(train_val) + \
-                      'tTest loss: {:.5f}'.format(test_val))
+                  ' \tTraning loss: {:.5f} '.format(train_val) + \
+                      ' \tTest loss: {:.5f} '.format(test_val))
                 
         elif (epoch+1) % param['display_epochs'] == 0:
             print('Epoch [{}/{}] ({:.1f}%) '.format(epoch+1, num_epochs, \
                                                    ((epoch+1)/num_epochs*100))+ \
-                  '\tTraning loss: {:.5f} '.format(train_val) + \
-                      '\tTest loss: {:.5f}'.format(test_val))
+                  ' \tTraning loss: {:.5f} '.format(train_val) + \
+                      ' \tTest loss: {:.5f} '.format(test_val))
+
             winsound.Beep(1000,100)
         
     print('Final training Loss: {:.6f}'.format(loss_vals[-1]))
@@ -206,7 +226,7 @@ if __name__ == "__main__":
     
     print('Data processed')
     print('Beginning training...')
-    loss_vals, cross_vals = run(param['exec'], model, data) # Train the model.
+    loss_vals, cross_vals = run(param['exec'], model, data, device) # Train the model.
     
     train_time = time.time()-start_time # Determine the time took to train.
     ## Convert the time into a more readable formate of hours, minutes and seconds.

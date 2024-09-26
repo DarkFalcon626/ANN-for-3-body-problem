@@ -17,9 +17,9 @@ import torch.nn as nn
 import torch.nn.functional as func
 
 
-##-----------------------------------------------------------------------------
+##--------------------------------------------------------
 ## Class's
-##-----------------------------------------------------------------------------
+##--------------------------------------------------------
 
 class Data():
     '''
@@ -129,8 +129,6 @@ class Data():
         values_train = values_train.reshape((values_train.shape[0]*values_train.shape[1], values_train.shape[2]))
         values_test = values_test.reshape((values_test.shape[0]*values_test.shape[1], values_test.shape[2]))
         
-        print(targets_test.shape)
-        print(values_test.shape)
         ## Get the lenght of the test and training data.
         self.n_train = targets_train.shape[0]
         self.n_test = targets_test.shape[0]
@@ -141,6 +139,78 @@ class Data():
         
         self.values_train = torch.tensor(values_train).to(device)
         self.values_test = torch.tensor(values_test).to(device)
+    
+    def shuffle(self, device=torch.device('cpu')):
+        '''
+        Shuffles up the data for the training and the test data sets keeping
+        the targets and the values matching in the indices
+
+        Returns
+        -------
+        None.
+
+        '''
+        
+        ## Create an array with all the indices of the training set.
+        indexs = np.arange(0, self.n_train, 1)
+            
+        ## Shuffle the indices.
+        np.random.shuffle(indexs)
+            
+        indexs = torch.tensor(indexs).to(device)
+        
+        self.targets_train = torch.index_select(self.targets_train,0,indexs)
+        self.values_train = torch.index_select(self.values_train,0,indexs)
+        
+        indexs = np.arange(self.n_test)
+        
+        np.random.shuffle(indexs)
+        
+        indexs = torch.tensor(indexs).to(device)
+        
+        self.targets_test = torch.index_select(self.targets_test, 0, indexs)
+        self.values_test = torch.index_select(self.values_test, 0, indexs)
+    
+
+    def create_batch(self, n_batches, shuffle = True, device=torch.device('cpu')):
+        '''
+        Reshapes the data into batchs for training. If data can not be broken
+        into equal sized batchs, last batch will be dropped.
+
+        Parameters
+        ----------
+        n_batches : Int
+            The number of batchs to split the data into.
+        shuffle : Bool, optional
+            If true the data will be shuffled. The default is True.
+
+        Returns
+        -------
+        targets_train : Torch Tensor
+            The training targets batched data.
+        values_train : Torch Tensor
+            The training values batched data.
+        '''
+        
+        if shuffle:
+            self.shuffle(device)
+
+        batch_size = self.n_train//n_batches
+        
+        rem = self.n_train%batch_size
+            
+        targets_train = self.targets_train[:-rem]
+        values_train = self.values_train[:-rem]
+        
+        targets_train = torch.reshape(targets_train,(n_batches,
+                                                     batch_size,
+                                                     targets_train.shape[1]))
+        values_train = torch.reshape(values_train, (n_batches,
+                                                    batch_size,
+                                                    values_train.shape[1]))
+        
+        return targets_train, values_train
+        
         
 
 class Net(nn.Module):
@@ -192,10 +262,16 @@ class Net(nn.Module):
         drop_out_rate = net_params['drop_out']
         
         ## Create the network.
-        self.layer1 = nn.Linear(5,hidden1)
-        self.layer2 = nn.Linear(hidden1, hidden2)
-        self.layer3 = nn.Linear(hidden2, hidden3)
-        self.layer4 = nn.Linear(hidden3, 2)
+        self.fc1 = nn.Sequential(nn.Linear(5, hidden1),
+                                 nn.Tanh(),
+                                 nn.BatchNorm1d(hidden1))
+        self.fc2 = nn.Sequential(nn.Linear(hidden1, hidden2),
+                                 nn.Tanh(),
+                                 nn.BatchNorm1d(hidden2))
+        self.fc3 = nn.Sequential(nn.Linear(hidden2, hidden3),
+                                 nn.Tanh(),
+                                 nn.BatchNorm1d(hidden3))
+        self.fc4 = nn.Linear(hidden3, 2)
         
         self.drop_out = nn.Dropout(drop_out_rate)
         
@@ -218,17 +294,13 @@ class Net(nn.Module):
             The models best guess at the solution.
         '''
         
-        x = self.layer1(x)
-        x = func.tanh(x)
+        x = self.fc1(x)
         x = self.drop_out(x)
-        x = self.layer2(x)
-        x = func.tanh(x)
+        x = self.fc2(x)
         x = self.drop_out(x)
-        x = self.layer3(x)
-        x = func.tanh(x)
-        x = self.drop_out(x)
-        x = self.layer4(x)
-        
+        x = self.fc3(x)
+        x = self.fc4(x)
+
         return x
 
     
@@ -320,6 +392,9 @@ if __name__ == '__main__':
     
     ## Create a data and network class.
     data = Data([0,1], param['data'], device)
-    model = Net(param['net'])
-    
+    model = Net(param['net']).to(device)
+    x = model.forward(data.values_train)
     print('Data and model created successfully.')
+    data.shuffle(device)
+    print('Shuffled')
+    data_targets, data_values = data.create_batch(5, False, device)
