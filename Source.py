@@ -259,6 +259,8 @@ class Net(nn.Module):
         hidden1 = net_params['hidden_1']
         hidden2 = net_params['hidden_2']
         hidden3 = net_params['hidden_3']
+        hidden4 = net_params['hidden_4']
+        hidden5 = net_params['hidden_5']
         drop_out_rate = net_params['drop_out']
         
         ## Create the network.
@@ -271,7 +273,13 @@ class Net(nn.Module):
         self.fc3 = nn.Sequential(nn.Linear(hidden2, hidden3),
                                  nn.Tanh(),
                                  nn.BatchNorm1d(hidden3))
-        self.fc4 = nn.Linear(hidden3, 2)
+        self.fc4 = nn.Sequential(nn.Linear(hidden3, hidden4),
+                                 nn.Tanh(),
+                                 nn.BatchNorm1d(hidden4))
+        self.fc5 = nn.Sequential(nn.Linear(hidden4, hidden5),
+                                 nn.Tanh(),
+                                 nn.BatchNorm1d(hidden5))
+        self.fc6 = nn.Linear(hidden5, 2)
         
         self.drop_out = nn.Dropout(drop_out_rate)
         
@@ -299,7 +307,12 @@ class Net(nn.Module):
         x = self.fc2(x)
         x = self.drop_out(x)
         x = self.fc3(x)
+        x = self.drop_out(x)
         x = self.fc4(x)
+        x = self.drop_out(x)
+        x = self.fc5(x)
+        x = self.drop_out(x)
+        x = self.fc6(x)
 
         return x
 

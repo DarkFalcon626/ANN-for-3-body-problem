@@ -16,8 +16,10 @@
 	
 	"net":{
 		"hidden_1": 10,
-		"hidden_2": 10,
-		"hidden_3": 5,
+		"hidden_2": 15,
+		"hidden_3": 10,
+		"hidden_4": 8,
+		"hidden_5": 4,
 		"drop_out": 0.2
 	},
 
